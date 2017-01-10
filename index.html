@@ -1,0 +1,254 @@
+<html>
+    <head>
+        <title>Abastecimiento - Control incidencias. Concello de Marin</title>
+        <meta charset='utf-8'>
+        <script type="text/javascript" src='js/jquery.js '></script>
+        <script type="text/javascript" src='js/tabletop1.3.4.js'></script>
+        <script type="text/javascript" src='js/sheetsee.js'></script>
+        <script type="text/javascript" src='js/leaflet.markercluster.js'></script>
+        <link rel="shortcut icon" href="https://raw.github.com/jlord/hack-spots/master/favico.png"/>
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <link href='https://api.tiles.mapbox.com/mapbox.js/v1.4.0/mapbox.css' rel='stylesheet' />
+        <link rel='stylesheet' type='text/css' href='https://fonts.googleapis.com/css?family=Lato:300,400,700,300italic'>
+        <link rel='stylesheet' type='text/css' href='https://fonts.googleapis.com/css?family=Amatic+SC:400,700'>
+        <link media="screen" rel="stylesheet" type="text/css" href="css/style.css">
+        <link media="screen" rel="stylesheet" type="text/css" href="css/site.css">
+        <link rel="stylesheet" href="css/MarkerCluster.css" />
+        <link rel="stylesheet" href="css/MarkerCluster.Default.css" />
+    </head>
+<body>
+    <div id="wrapper">
+        <h2>Concello de Marin - Gestion de Incidencias: Abastecimiento</h2>
+        <div>
+            <ul class="nav">
+                <li><strong>Estado de las incidencias del abastecimiento</strong></li>
+                <li><a href="#info">Descripcion</a> -</li>
+                <li><a href="http://jlord.github.com/sheetsee.js" target="_blank">Basado en SHEETSEE.JS</a> -</li>
+                <li><a href="http://www.github.com/jlord/hack-spots" target="_blank">GITHUB</a> -</li>
+                <li><a href="http://www.twitter.com/jllord" target="_blank">@JLLORD</a></li>
+            </ul>
+        </div>
+        <div class="container">
+            <div id="rightSide">
+                <div id="latestSpot"></div>
+                <div id="selectedSpot"></div>
+            </div>
+            <div id="map"></div>
+        </div>
+        <div class="container">
+            <input id="tableFilter" type="text" placeholder="Filtrar por"></input>
+            <span class="clear button">Borrar</span> <span class="resetMap button">Limpiar Mapa</span>
+            <span class="noMatches">Sin resultados</span>
+            <div id="hackSpotsTable"></div>
+        </div>
+        <div id="info" class="container">
+            <h3>Descripcion</h3>
+            <div id="theNumberofSpots"></div>
+            <p>Informacion provenientes de la siguiente <a href="https://docs.google.com/spreadsheets/d/18o2-c9sWq_MBN4MYrvI1GUnGds1miuvyloJ3H9qexHE/pubhtml" target="_blank">hoja de Google Drive</a>.</p>
+
+            <h3>Info</h3>
+            <p>When I'm visiting a new city I'd like to know which coffee shops have the best vibes, great coffee and are good for hunkering down and having a good hack. Yelp will tell you where the Starbucks is and Foursquare will tell you where your friend's have <em>been</em> - but did they like it and was it a grab in go place or a hack place? Plus, what about the people I don't follow on Foursquare or who can't check-in when in other countries?</p>
+
+            <p>Besides being a list I've wanted to have, it's a fantastic (or I think so) way of using <a href="http://jlord.github.io/sheetsee.js" target="_blank">sheetsee.js</a>, which is a little JavaScript library I've been working on. Sheetsee.js helps you hook a Google Spreadsheet (awesome for data and collaboration!) to a website to make data more visual (maps, tables, charts).</p>
+
+            <h3>Copia y pega</h3>
+            <p>This is a work-in-progress example of a fork-n-go project - which means, there is just a <a href="https://github.com/jlord/hack-spots" target="_blank">gh-pages branch in GitHub</a> for this project so when you fork it, you've got a live and hosted website instantly. BAM! Just copy the spreadsheet headers and create your own spreadsheet, swap out the spreadsheet key in index.html and commit those changes. BAM! You've got a live and hosted site with a spreadsheet you control. More on the <a href="http://www.github.com/jlord/hack-spots" target="_blank">readme</a>.</p>
+        </div>
+    </div><!-- end wrapper -->
+
+    <script id="hackSpotsTable" type="text/html">
+        <table>
+          <tr>
+            <th class="tHeader">Codigo</th>
+            <th class="tHeader">Descripcion</th>
+            <th class="tHeader">Localizacion</th>
+            <th class="tHeader">Solicitante</th>
+            <th class="tHeader">Estado</th>
+            <th class="tHeader">Fecha notificacion</th>
+            <th class="tHeader">Fecha comunicacion</th>
+            <th class="tHeader">Fecha resolucion</th>
+          
+           <th class="tHeader">G Maps</th>
+          
+         </tr>
+            {{#rows}}
+                <tr id="{{rowNumber}}" class="spotRow">
+                <td>{{codigo}}</td>
+                <td>{{descripcion}}</td>
+                <td>{{localizacion}}</td>
+                <td>{{nombreyapellidos}}</td>
+                <td>{{estado}}</td>
+                <td>{{fechanotificacion}}</td>
+                <td>{{fechacomunicacion}}</td>
+                <td>{{fecharesolucion}}</td>
+       
+           <td><a class="button" href="https://maps.google.com/maps?q={{localizacion}}" target="_blank">G Map</a> </td>
+         
+        </tr>
+            {{/rows}}
+        </table>
+    </script>
+
+    <script id="latestSpot" type="text/html">
+        {{#rows}}
+            <h4 class="fauxButton">Datos de la incidencia</h4>
+            <h2>{{localizacion}}</h2>
+            <p class="colorText">{{descripcion}}</p>
+        <!--   <p class="colorText">{{city}}{{#state}}, {{state}}{{/state}}{{#postcode}}, {{postcode}}{{/postcode}}</p>-->
+            <ul>
+                <li><span class="category">Fecha comunicacion: </span> {{fechacomunicacion}}</li>
+                <li><span class="category">Solicitante:</span> {{nombreyapellidos}}</li>
+                <li><span class="category">Fecha resolucion: </span> {{fecharesolucion}}</li>
+                <li><span class="category">Estado actual:</span> {{estado}}</li>
+                <li><span class="category">Observaciones:</span> {{observaciones}}</li>
+              <!--  <li><span class="category">Contributed By:</span> <a href="http://www.twitter.com/{{contributerstwitter}}" target="_blank">@{{contributerstwitter}}</a></li>-->
+            </ul>
+            <ul>
+                <li><a href="https://maps.google.com/maps?q={{localizacion}}" target="_blank">Ver en Google Maps</a></li>
+                <!--
+                <li><a href="https://maps.google.com/maps?q={{name}},{{city}},{{state}}" target="_blank">View in Google Maps</a></li>
+                <li><a href="http://www.yelp.com/search?find_desc={{name}}&find_loc={{city}},{{state}}" target="_blank">Find on Yelp</a></li>
+                -->
+            </ul>
+        {{/rows}}
+    </script>
+
+    <script id="theNumberofSpots" type="text/html">
+        <p>N&uacute;mero de incidencias:<strong><span class="red-text"> {{numberOfSpots}}</span></p>
+    </script>
+
+    <script id="selectedSpot" type="text/html">
+        {{#rows}}
+            <h4 class="fauxButton">Datos de la incidencia</h4>
+            <h2>{{localizacion}}</h2>
+            <p class="colorText">{{descripcion}}</p>
+            <!--
+            <p class="colorText">{{city}}{{#state}}, {{state}}{{/state}}{{#postcode}}, {{postcode}}{{/postcode}}</p>
+            -->
+        <ul>
+                <li><span class="category">Fecha comunicacion: </span> {{fechacomunicacion}}</li>
+                <li><span class="category">Solicitante:</span> {{nombreyapellidos}}</li>
+                <li><span class="category">Fecha resolucion: </span> {{fecharesolucion}}</li>
+                <li><span class="category">Estado actual:</span> {{estado}}</li>
+                <li><span class="category">Observaciones:</span> {{observaciones}}</li>
+              <!-- 
+              <li><span class="category">Contributed By:</span> <a href="http://www.twitter.com/{{contributerstwitter}}" target="_blank">@{{contributerstwitter}}</a></li>
+              -->
+            </ul>
+            <ul>
+                <li><a href="https://maps.google.com/maps?q={{localizacion}}" target="_blank">Ver en Google Maps</a></li>
+                <!--
+                <li><a href="https://maps.google.com/maps?q={{name}},{{city}},{{state}}" target="_blank">View in Google Maps</a></li>
+                <li><a href="http://www.yelp.com/search?find_desc={{name}}&find_loc={{city}},{{state}}" target="_blank">Find on Yelp</a></li>
+                -->
+            </ul>
+        {{/rows}}
+    </script>
+
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            var gData
+            var URL = "https://docs.google.com/spreadsheets/d/18o2-c9sWq_MBN4MYrvI1GUnGds1miuvyloJ3H9qexHE/pubhtml"
+                Tabletop.init({ key: URL, callback: showInfo, simpleSheet: true })
+        })
+        // so long, so messy
+        function showInfo(gData) {
+            tableOptions = {
+                "data": gData,
+                "tableDiv": "#hackSpotsTable",
+                "filterDiv": "#tableFilter"
+            }
+            // make the table, and the search bar
+            Sheetsee.makeTable(tableOptions)
+            Sheetsee.initiateTableFilter(tableOptions)
+            // create geoJSON with coordinates and other
+            // useful bits from the original data
+            var optionsJSON = ["codigo", "localizacion", "nombreyapellidos", "descripcion", "estado", "rowNumber"]
+            var geoJSON = Sheetsee.createGeoJSON(gData, optionsJSON)
+            // create map, tilelayer (map background), markers and popups
+            var map = Sheetsee.loadMap("map")
+            Sheetsee.addTileLayer(map, 'jllord.n7aml2bc')
+            var markerLayer = Sheetsee.addMarkerLayer(geoJSON, map, "<h2><u>{{ localizacion }}</u><br/>{{ descripcion }}</h2>", true)
+            // find the latest spot with the most important
+            // info filled in (to prevent map breaking if
+            // someone is currently editing spreadsheet)
+            var theLatestSpot = findLatestCompleteSpot(gData)
+            var latestSpot = Sheetsee.ich.latestSpot({
+                rows: theLatestSpot
+            })
+            // set it and pan to it
+            $('#latestSpot').html(latestSpot)
+            map.setView([theLatestSpot.lat, theLatestSpot.long], 16)
+            // when someone clicks on a row, highlight it and
+            // re-center the map
+            // TODO show popup, change marker color
+            $('.spotRow').live("click", function(event) {
+                $('.spotRow').removeClass("selectedRow")
+                var rowNumber = $(this).closest("tr").attr("id")
+                $('#' + rowNumber).addClass("selectedRow")
+                var dataElement = Sheetsee.getMatches(gData, rowNumber, "rowNumber")
+                var selectedSpot = Sheetsee.ich.selectedSpot({
+                    rows: dataElement
+                })
+                $('#latestSpot').css("display", "none")
+                $('#selectedSpot').html(selectedSpot).css("display", "inline")
+                var selectedCoords = [dataElement[0].lat, dataElement[0].long]
+                map.setView(selectedCoords, 15)
+            })
+            // so that the first map and info that loads
+            // is complete and doesn't show rows that are
+            // actively being edited by folk
+            function findLatestCompleteSpot(data) {
+                var latestCompleteSpot = []
+                var startWithLatestRow = data.reverse()
+                startWithLatestRow.forEach(function(row){
+                    if (!row.lat || !row.long || !row.codigo || !row.localizacion || !row.estado || !row.descripcion ) return
+                    else latestCompleteSpot.push(row)
+                })
+                return latestCompleteSpot[0]
+            }
+            // Add click listener to the markerLayer
+            markerLayer.on('click', function(e) {
+                // clear any selected rows
+                $('.spotRow').removeClass("selectedRow")
+                // get row number of selected marker
+                var rowNumber = e.layer.feature.opts.rowNumber
+                // find that row in the table and make consider it selected
+                $('#' + rowNumber).addClass("selectedRow")
+                // using row number, get the data for the selected spot
+                var dataElement = Sheetsee.getMatches(gData, rowNumber.toString(), "rowNumber")
+                // take those details and re-write the selected spot section
+                var selectedSpot = Sheetsee.ich.selectedSpot({
+                    rows: dataElement
+                })
+                // center the map on the selected element
+                map.panTo([dataElement[0].lat, dataElement[0].long])
+                // update the spot listing
+                $('#latestSpot').css("display", "none")
+                $('#selectedSpot').html(selectedSpot).css("display", "inline")
+            })
+            // reset the map, zoom out, and recenter on 0,0
+            $('.resetMap').click(function() {
+                $('.spotRow').removeClass("selectedRow")
+                $('#latestSpot').css("display", "inline")
+                $('#selectedSpot').css("display", "none")
+                map.setView([42.362147, -8.705459], 12)
+            })
+            // find total number of spots added
+            var theNumberofSpots = Sheetsee.ich.theNumberofSpots({
+                numberOfSpots: gData.length
+            })
+            $('#theNumberofSpots').html(theNumberofSpots)
+            if(window.location.hash) {
+                $('#tableFilter').val(window.location.hash.substring(1)).keyup()
+                $('.spotRow').first().click()
+            }
+        }
+        $(document).on('keyup', '#tableFilter', function() {
+            window.location.hash = $(this).val()
+            $('.spotRow').first().click()
+        })
+    </script>
+</body>
+</html>
